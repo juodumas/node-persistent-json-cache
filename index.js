@@ -127,7 +127,7 @@ async function init(path, opts) {
     }else{ // use objects without prototype to avoid keys conflicts with inherited props like 'constructor'
         if (await fileExists(path)) {
             const c = JSON.parse(await readFile(path), (k,v) => {
-                if(typeof v === 'object' && v !== null){
+                if(typeof v === 'object' && v !== null && !Array.isArray(v)){
                   return Object.assign(Object.create(null),v)
                 }
                 return v

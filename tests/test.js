@@ -194,10 +194,12 @@ test('no conflicts with inherited object properties', async t => {
     const path = t.context.path
     let cache = await persistent(path, {dict: true}) // no cache yet, empty object created
     cache.hi = 'hi'
+    cache.a = [1,2,3];
     t.assert(cache.constructor === undefined)
     await persistent.close(cache)
     cache = await persistent(path, {dict: true}) // there is a cache already, empty object loaded from JSON
     t.assert(cache.hi === 'hi')
+    t.assert(Array.isArray(cache.a));
     t.assert(cache.constructor === undefined)
     cache.constructor = 'hello'
     t.assert(cache.constructor === 'hello')
