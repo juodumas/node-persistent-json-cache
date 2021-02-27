@@ -3,6 +3,8 @@ const fs = require('fs/promises')
 const os = require('os')
 const path = require('path')
 const test = require('ava')
+const reservedKeys1 = ['constructor', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'valueOf'];
+const reservedKeys2 = ['__defineGetter__', '__defineSetter__', '__lookupGetter__', '__lookupSetter__', '__proto__'];
 
 const persistent = require('../index')
 
@@ -195,15 +197,25 @@ test('no conflicts with inherited object properties', async t => {
     let cache = await persistent(path, {dict: true}) // no cache yet, empty object created
     cache.hi = 'hi'
     cache.a = [1,2,3];
-    t.assert(cache.constructor === undefined)
+    reservedKeys1.forEach(rk => t.assert(cache[rk] === undefined));
+    reservedKeys2.forEach(rk => t.assert(cache[rk] === undefined));
     await persistent.close(cache)
     cache = await persistent(path, {dict: true}) // there is a cache already, empty object loaded from JSON
     t.assert(cache.hi === 'hi')
     t.assert(Array.isArray(cache.a));
-    t.assert(cache.constructor === undefined)
-    cache.constructor = 'hello'
-    t.assert(cache.constructor === 'hello')
+    reservedKeys1.forEach(rk => t.assert(cache[rk] === undefined));
+    reservedKeys2.forEach(rk => t.assert(cache[rk] === undefined));
+
+    reservedKeys1.forEach(rk => {
+        cache[rk] = 'hello';
+        t.assert(cache[rk] === 'hello')
+    });
+    reservedKeys2.forEach(rk => {
+        cache[rk] = 'hello';
+        t.assert(cache[rk] === 'hello')
+    });
     await persistent.close(cache)
     cache = await persistent(path, {dict: true})
-    t.assert(cache.constructor === 'hello')
+    reservedKeys1.forEach(rk => t.assert(cache[rk] === 'hello'));
+    reservedKeys2.forEach(rk => t.assert(cache[rk] === 'hello'));
 })
