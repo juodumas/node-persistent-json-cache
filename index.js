@@ -117,12 +117,26 @@ async function init(path, opts) {
         })
         cleanupsRegistered = true
     }
-
-    if (await fileExists(path)) {
-        proxy = proxyRecurse(JSON.parse(await readFile(path)))
-    }
-    else {
-        proxy = createProxy({})
+    if(!opts || !opts.dict){
+        if (await fileExists(path)) {
+            proxy = proxyRecurse(JSON.parse(await readFile(path)))
+        }
+        else {
+            proxy = createProxy({})
+        }
+    }else{ // use objects without prototype to avoid keys conflicts with inherited props like 'constructor'
+        if (await fileExists(path)) {
+            const c = JSON.parse(await readFile(path), (k,v) => {
+                if(typeof v === 'object' && v !== null && !Array.isArray(v)){
+                  return Object.assign(Object.create(null),v)
+                }
+                return v
+            })
+            proxy = proxyRecurse(c)
+        }
+        else {
+            proxy = createProxy(Object.create(null))
+        }
     }
 
     periodicSave()

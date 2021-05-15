@@ -9,11 +9,12 @@
   "main": "index.js",
   "devDependencies": {
     "ava": "^3.13.0",
+    "eslint": "^7.20.0",
     "markdown-doctest": "^1.1.0"
   },
   "scripts": {
     "doctest": "node --unhandled-rejections=strict node_modules/.bin/markdown-doctest",
-    "test": "ava"
+    "test": "ava && eslint index.js && eslint tests/** "
   },
   "keywords": [
     "transparent",
